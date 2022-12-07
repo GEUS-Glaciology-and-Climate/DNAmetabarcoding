@@ -1,0 +1,41 @@
+##Goal: produce contingency table of seed-IDs (build sum of counts per cluster for each sample)
+
+##Input files
+
+original.contingency.table='test_shortnames.tab'
+swarm.clusters='listofclusters_AMD18S_swarm_fastidious_shortnames.txt'
+stats.file='statistics_swarm_fastidious_shortnames.txt'
+output='OTU.contingency.tab.txt'
+
+##Input files - explanations:
+
+original.contingency.table: this file contains the information about how many counts the IDs have per sample. We need this info to build the cluster-sum (for each sample the sum of counts of all IDs belonging to the cluster); tab separated, first colum = ID (rows are defined by unique ID), second=sum of ID's counts across all samples; columns = samples (start in column 3 end at third to last column); the second to last column is seq-rank (integer) and the last column is the sequence (character) should just take the seq-rank value of the seed-ID (=first entry per line in swarm.cluster) and the 
+
+swarm.clusters: list of clusters; no header; each line is one cluster that starts with the seed-ID, followed by the other IDs that are part of the cluster separated by space. After each ID there is the information about the sum of the ID's counts across all samples (we don't need this for the contingency table); the clusters all have a different size (number of unique IDs)
+the general layout of this file is:
+seed-ID_1;size=counts; ID;size=counts; ...
+seed-ID_2;size=counts; ID;size=counts; ...
+seed-ID_3;size=counts; ID;size=counts; ...
+
+stats.file: has 7 columns but no header; tab separated; I need 3 columns: 
+(1) column 3 contains the seed-ID; 
+(2) column 2 contains total counts of cluster
+(3) column 1 contains the number of unique IDs in the cluster
+
+
+#final contingency table output: tab separated table
+
+1. take header from original.contingency.table as new header
+2. append new column 'Sequences.in.swarm' 
+3. from stats.file write column 3 into column 3 of output file (='ID') # WRONG? WRITE COLUMN 3 (seed-ID) INTO COLUMN 1 (id)
+4. from stats.file write column 2 into column 2 of output file (='count')
+5. from stats.file write column 1 into last column of output file (='Sequences.in.swarm')
+6. go through the swarm.clusters file line-by-line (each line represents a cluster) and do:
+	a) match seed-ID (=first entry of each line) with 'ID' in output file
+	b) for each ID in line of swarm.clusters --> do: match the ID in original.contingency.table (=col 1) and do: build the sum for each sample column (columns 3 to n-2 here; but to be flexible, just match pattern: col.name starts with 'sample'); note: it would be good if it is a requirement that for the sum to be made the col.names have to match in the original.contingency.table and the output
+	c) write cluster-sums into output
+7. from original.contingency.table take 'seq-rank' and 'sequence' (match by ID) and write to output into the corresponsing columns
+
+	
+
+
