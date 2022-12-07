@@ -25,7 +25,7 @@ listofclusters_input = 'input/listofclusters_AMD18S_swarm_fastidious_shortnames.
 # Define output filepath
 if not os.path.exists('output'):
 	os.makedirs('output')
-output_file = 'output/final_contengency.txt'
+output_file = 'output/final_contingency.txt'
 # ============================================================
 
 print('reading input files')
