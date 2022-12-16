@@ -12,6 +12,7 @@ The script depends on an `input` directory existing at the same level, that incl
 - `listofclusters_AMD18S_swarm_fastidious_shortnames.txt`
 - `test_shortnames.tab`
 - `statistics_swarm_fastidious_shortnames.txt`
+- `ID_removal_list.txt`
 
 The `output` directory will be created if it does not exist. Final output will be written to:
 `output/final_contingency.txt` (tab-delimited text file)
