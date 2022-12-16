@@ -21,6 +21,7 @@ from progress.bar import Bar
 test_shortnames_input = 'input/test_shortnames.tab'
 statistics_swarm_input = 'input/statistics_swarm_fastidious_shortnames.txt'
 listofclusters_input = 'input/listofclusters_AMD18S_swarm_fastidious_shortnames.txt'
+id_removal_list = 'input/test_ID_removal_list.txt'
 
 # Define output filepath
 if not os.path.exists('output'):
@@ -31,6 +32,7 @@ output_file = 'output/final_contingency.txt'
 print('reading input files')
 og_contingency = pd.read_csv(test_shortnames_input, sep='\t')
 stats_file = pd.read_csv(statistics_swarm_input, header=None, sep='\t')
+id_removal = pd.read_csv(id_removal_list, header=None)
 
 print('creating dataframe for final_contingency table')
 # rename first three columns in stats_file
@@ -62,6 +64,9 @@ filter_cols = [col for col in og_contingency if col.startswith('sample')]
 # Add an 'id' column name
 filter_cols_with_id = ['id'] + filter_cols
 
+# Make a set of contaminant IDs to remove
+id_removal_set = set(id_removal.values.flatten())
+
 print('reading listofclusters input file')
 num_lines = sum(1 for line in open(listofclusters_input))
 with open(listofclusters_input) as f:
@@ -70,14 +75,20 @@ with open(listofclusters_input) as f:
 	for line in f:
 		temp_table = pd.DataFrame(columns=filter_cols_with_id)
 		seed_ID = line.split(';')[0]
+		if seed_ID in id_removal_set:
+			# The seed ID cannot be a contaminant, move onto next line
+			continue
 		line_ID_list = line.split(' ')
 		for i in line_ID_list:
 			line_id = i.split(';')[0]
-			og_cont_row = og_contingency.loc[og_contingency['id'] == line_id][filter_cols_with_id]
-			# Note, the temp_table will end up with random integer index positions without the following line,
-			# which is OK (index not used/needed), so leaving this out to maybe gain some performance.
-			# og_cont_row = og_cont_row.reset_index().drop('index', axis=1)
-			temp_table = pd.concat([temp_table, og_cont_row]) # add the row to temp_table
+			if line_id not in id_removal_set:
+				og_cont_row = og_contingency.loc[og_contingency['id'] == line_id][filter_cols_with_id]
+				# Note, the temp_table will end up with random integer index positions without the following line,
+				# which is OK (index not used/needed), so leaving this out to maybe gain some performance.
+				# og_cont_row = og_cont_row.reset_index().drop('index', axis=1)
+				temp_table = pd.concat([temp_table, og_cont_row]) # add the row to temp_table
+			else:
+				print('----> Skipping contaminant ID: {}'.format(line_id))
 		# we are done assigning each row into temp table from og_contingency, now sum and assign to final_contingency
 		for column in temp_table:
 			if column not in ('id',):
